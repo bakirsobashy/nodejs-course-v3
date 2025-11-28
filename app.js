@@ -6,17 +6,15 @@ const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const helmet = require('helmet');
 
 const app = express();
 
-<<<<<<< HEAD
 app.set('view engine', 'pug');
 app.set('views', `${__dirname}/views`);
 
 app.use(helmet());
 
-=======
->>>>>>> parent of 56a4845 (before starting with pug)
 // 1) MIDDLEWARES
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
