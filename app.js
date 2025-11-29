@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.status(200).render('base');
+  res.status(200).send('Welcome to the API');
 });
 
 // 3) ROUTES
