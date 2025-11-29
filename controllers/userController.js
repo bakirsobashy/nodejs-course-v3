@@ -57,6 +57,38 @@ exports.addToCart = catchAsync(async (req, res, next) => {
   }
 });
 
+exports.checkOut = catchAsync(async (req, res, next) => {
+  const user = req.user;
+  let totalAmount = 0;
+  if (user.cart.length === 0) {
+    return next(new AppError('Your cart is empty', 400));
+  }
+  for (const item of user.cart) {
+    const product = await Product.findById(item.product);
+    if (!product) {
+      return next(new AppError('A product in your cart no longer exists', 404));
+    }
+    if (product.stock < item.quantity) {
+      return next(
+        new AppError(`Not enough stock for product ${product.name}`, 400)
+      );
+    }
+    totalAmount += product.price * item.quantity;
+    product.stock -= item.quantity;
+    await product.updateOne({ stock: product.stock });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Checkout successful',
+    totalAmount: totalAmount
+  });
+  // Here you would typically handle payment processing and order creation
+  // For simplicity, we'll just clear the cart
+  user.cart = [];
+  await user.updateOne({ cart: user.cart });
+});
+
 exports.getUser = (req, res) => {
   res.status(500).json({
     status: 'error',

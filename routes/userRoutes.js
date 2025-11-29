@@ -13,6 +13,8 @@ router.post(
   userController.addToCart
 );
 
+router.get('/check-out', authController.protect, userController.checkOut);
+
 router
   .route('/')
   .get(authController.protect, userController.getAllUsers)
