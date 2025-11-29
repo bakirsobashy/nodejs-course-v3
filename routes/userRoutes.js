@@ -15,6 +15,8 @@ router.post(
 
 router.get('/check-out', authController.protect, userController.checkOut);
 
+router.get('/logout', authController.protect, authController.logout);
+
 router
   .route('/')
   .get(authController.protect, userController.getAllUsers)

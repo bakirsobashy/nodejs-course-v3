@@ -10,6 +10,17 @@ const signToken = id => {
   });
 };
 
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+  res.cookie('jwt', token, {
+    // expires: new Date(
+    //   Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    // ),
+    httpOnly: true
+  });
+  return token;
+};
+
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
@@ -19,13 +30,11 @@ exports.signup = catchAsync(async (req, res, next) => {
     role: req.body.role
   });
 
-  const token = signToken(newUser._id);
-
   res.status(201).json({
     status: 'success',
     data: {
       user: newUser,
-      token: token
+      token: createSendToken(newUser._id, 201, res)
     }
   });
 });
@@ -43,23 +52,32 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Incorrect email or password', 401));
   }
 
-  const token = signToken(user._id);
   res.status(200).json({
     status: 'success',
-    token: token
+    token: createSendToken(user._id, 200, res)
   });
 });
 
-exports.protect = catchAsync(async (req, res, next) => {
-  let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
-  }
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true
+  });
+  res.status(200).json({ status: 'success' });
+};
 
-  if (!token) return next(new AppError('You are not loged in', 401));
+exports.protect = catchAsync(async (req, res, next) => {
+  const token = req.cookies.jwt;
+  // OLD WAY TO GET TOKEN
+  // if (
+  //   req.headers.authorization &&
+  //   req.headers.authorization.startsWith('Bearer')
+  // ) {
+  //   token = req.headers.authorization.split(' ')[1];
+  // }
+
+  if (!token || token === 'loggedout')
+    return next(new AppError('You are not loged in', 401));
 
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
