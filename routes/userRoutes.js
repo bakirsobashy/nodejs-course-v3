@@ -7,6 +7,12 @@ const router = express.Router();
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 
+router.post(
+  '/add-to-cart/:productId/:amount',
+  authController.protect,
+  userController.addToCart
+);
+
 router
   .route('/')
   .get(authController.protect, userController.getAllUsers)

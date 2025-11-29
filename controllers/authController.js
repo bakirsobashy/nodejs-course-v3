@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel.js');
 const catchAsync = require('./../utils/catchAsync.js');
 const AppError = require('./../utils/appError.js');
-const { decode } = require('punycode');
 
 const signToken = id => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -69,9 +68,9 @@ exports.protect = catchAsync(async (req, res, next) => {
     return new AppError('the user of this token no longer exist', 401);
   }
 
-  if (currentUser.changesPasswordAfter(decoded.iat)) {
-    return new AppError('User recently changed the password', 401);
-  }
+  // if (currentUser.changesPasswordAfter(decoded.iat)) {
+  //   return new AppError('User recently changed the password', 401);
+  // }
 
   req.user = currentUser;
   next();

@@ -8,13 +8,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'email is required'],
     unique: true,
-    lowecase: true,
+    lowercase: true,
     validate: [validator.isEmail, 'email is not valid']
   },
   photo: String,
   role: {
     type: String,
-    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    enum: ['user', 'admin'],
     default: 'user'
   },
   password: {
@@ -34,7 +34,13 @@ const userSchema = new mongoose.Schema({
       message: 'passwords entered are not the same'
     }
   },
-  passwordChangedAt: Date
+  passwordChangedAt: Date,
+  cart: [
+    {
+      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      quantity: { type: Number, default: 1 }
+    }
+  ]
 });
 
 userSchema.pre('save', async function(next) {
@@ -52,7 +58,7 @@ userSchema.methods.correctPassword = async function(
   return await bcrypt.compare(candidatePassword, userPassWord);
 };
 
-userSchema.methods.changesPasswordAfter = function(JWTTimestamp) {
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
@@ -63,6 +69,6 @@ userSchema.methods.changesPasswordAfter = function(JWTTimestamp) {
   return false;
 };
 
-const User = new mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;
